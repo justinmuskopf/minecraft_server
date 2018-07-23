@@ -42,7 +42,7 @@ class ServerCommander:
     def getLocationsForPlayer(self, player):
         json_data = json.load(open(self.LOCATIONS_FILE))
         locations = json_data[player]
-        return locations
+        return locations or None
 
     def saveLocationForPlayer(self, player, args):
         if len(args) != 5:
@@ -123,7 +123,7 @@ class ServerCommander:
                     if location:
                         tpString = "{} {} {} {}".format(player, location["x"], location["y"], location["z"])
                 else:
-                    self.invalidSyntax(player, "No player or location '{}' found!".format(args[1]))
+                    self.server.message(player, "No player or location '{}' found!".format(args[1]))
                     return
 
         self.server.teleport(tpString)
