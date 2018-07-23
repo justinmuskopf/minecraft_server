@@ -26,11 +26,6 @@
             "desc": "!save: Saves the server",
             "syntax": "!save",
             "admin": true
-        },
-        "help": {
-            "desc": "!help: Displays this help message",
-            "syntax": "!help (Displays all) | !help <command>",
-            "admin": true
         }
     },
     "time": {
@@ -63,6 +58,11 @@
         "save-spot": {
             "desc": "!save-spot: Saves a location for future teleportation",
             "syntax": "!save-spot <location name> <x> <y> <z>"
+        },
+        "help": {
+            "desc": "!help: Displays this help message",
+            "syntax": "!help (Displays all) | !help <command>",
+            "admin": true
         }
     }
 }   
