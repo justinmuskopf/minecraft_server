@@ -53,16 +53,18 @@
     "player": {
         "tp": {
             "desc": "!tp: Teleports players to other players or locations",
-            "syntax": "!tp <them> | !tp <them> <me> | !tp <saved spot> | !tp <x> <y> <z>"
+            "syntax": "!tp <them> | !tp <them> <me> | !tp <saved spot> | !tp <x> <y> <z>",
+            "admin": false
         },
         "save-spot": {
             "desc": "!save-spot: Saves a location for future teleportation",
-            "syntax": "!save-spot <location name> <x> <y> <z>"
+            "syntax": "!save-spot <location name> <x> <y> <z>",
+            "admin": false
         },
         "help": {
             "desc": "!help: Displays this help message",
             "syntax": "!help (Displays all) | !help <command>",
-            "admin": true
+            "admin": false
         }
     }
 }   
