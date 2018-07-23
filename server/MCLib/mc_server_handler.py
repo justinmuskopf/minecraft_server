@@ -69,7 +69,7 @@ class ServerHandler():
             self.server.message(player, msg)
             self.printFlush(msg)
             return
-        if self.COMMANDS[args[0]]['admin'] and !self.server.isAdmin(player):
+        if self.COMMANDS[args[0]]['admin'] and not self.server.isAdmin(player):
             self.server.message(player, "You don't have access to that command!")
             return
         func(player, args)
