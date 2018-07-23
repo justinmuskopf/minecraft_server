@@ -6,6 +6,7 @@ class ServerCommander:
     def __init__(server):
         if type(server) != Server:
             raise TypeError
+        self.server = server
 
     def invalidSyntax(self, player, cmd):
         self.server.message(player, self.COMMANDS[cmd]['syntax'])
@@ -46,6 +47,7 @@ class ServerCommander:
     def saveLocationForPlayer(self, player, args):
         if len(args) != 5:
             self.invalidSyntax(player, args[0])
+            return
 
         name = args[1].lower()
         xyz = args[2:]
@@ -79,14 +81,16 @@ class ServerCommander:
         elif numArgs == 3:
             if args[2] != 'me':
                 self.invalidSyntax(player, args[0])
+                return
             if len(args[1]) < 3:
                 self.server.message(player, "Please use at least three characters in the other person's name!")
                 return
 
             players = self.server.getCurrentPlayers()
             playerToTp = ""
+            lowerSearch = args[1].lower()
             for playerName in players:
-                if args[1].lower() in playerName.lower():
+                if lowerSearch in playerName.lower():
                     playerToTp = playerName
                     break
             if not playerToTp:
