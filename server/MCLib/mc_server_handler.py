@@ -48,6 +48,14 @@ class ServerHandler():
                     'func': self.changeTimeTo,
                     'desc': '!night: Sets the time to night time'
                 },
+                'noon': {
+                    'func': self.changeTimeTo,
+                    'desc': '!noon: Sets the time to noon'
+                }
+                'midnight': {
+                    'func': self.changeTimeTo,
+                    'desc': '!midnight: Sets the time to midnight'
+                }
                 'help': {
                     'func': self.sendHelp,
                     'desc': '!help: Displays this help message'
