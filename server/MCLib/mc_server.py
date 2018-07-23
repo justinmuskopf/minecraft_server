@@ -3,7 +3,7 @@ from time import sleep
 from datetime import date
 from sys import stdout, exit, path
 from mc_timeout import TimeoutSignal
-
+import re
 
 class Server:
 
@@ -16,10 +16,13 @@ class Server:
     CMD_WAIT = 3
     TIMEOUT = 5
     
+    CONNECT_PATTERN = r'^\[(?:\d{2}:){2}\d{2}\] \[.*\]: (.*) joined the game$'
+    DISCONN_PATTERN = r'^\[(?:\d{2}:){2}\d{2}\] \[.*\]: (.*) lost connection: .*'
 
     def __init__(self):
         self.today = date.today()
         self.process = None
+        self.players = set()
 
     def restartNeeded(self):
         if date.today() != self.today:
@@ -53,8 +56,8 @@ class Server:
     def changeTime(self, time):
         self.writeToProcess("time set {}".format(time))
 
-    def teleport(self, player):
-        pass
+    def teleport(self, tpFmt):
+        self.writeToProcess("tp {}".format(tpFmt))
     
     def message(self, player, msg):
         self.writeToProcess("tell {} {}".format(player, msg))
@@ -80,8 +83,24 @@ class Server:
             pass
         else:
             TimeoutSignal.reset()
+            if 'joined' in line:
+                match = re.match(self.CONNECT_PATTERN, line)
+                if match:
+                    self.players.add(match.group(1))
+                    self.printPlayers()
+            elif 'lost connection' in line:
+                match = re.match(self.DISCONN_PATTERN, line)
+                if match:
+                    self.players.discard(match.group(1))
+                    self.printPlayers()
 
         return line
+
+    def getCurrentPlayers(self):
+        return list(self.players)
+
+    def printPlayers(self):
+        print('Current Players: {}'.format(self.players))
 
     def isAdmin(self, player):
         if player in self.ADMINS:
