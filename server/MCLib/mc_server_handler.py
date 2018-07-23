@@ -1,9 +1,6 @@
-from subprocess import Popen, PIPE, STDOUT
-from time import sleep, time
-from datetime import date
-from sys import stdout, exit
+from time import time
+from sys import stdout
 from mc_server import Server
-import signal
 import re
 import json
 
@@ -11,9 +8,8 @@ class ServerHandler():
     SAVE_INTERVAL = 15 * 60
     WARNING_TIME = 60
     CMD_PATTERN = r'^\[(?:\d{2}:){2}\d{2}\] \[.*\]: <(.*)> (.*)$'
-    PLAYER_PATTERN = r'There are \d of a \d max players online: (.*)'
-    DEBUG_LOG = 'debug_log.txt'
     LOCATIONS_FILE = 'locations.json'
+    COMMANDS_FILE = 'commands.json'
     def __init__(self, server = None):
         if server:
             if type(server) != Server:
@@ -22,56 +18,21 @@ class ServerHandler():
         else:
             self.server = Server()
         self.lastSave = 0
-        self.COMMANDS = {
-                'clear': {
-                    'func': self.changeWeatherTo,
-                    'desc': '!clear: Changes the weather to clear'
-                },
-                'rain': {
-                    'func': self.changeWeatherTo,
-                    'desc': '!rain: Changes the weather to raining'
-                },
-                'thunder': {
-                    'func': self.changeWeatherTo,
-                    'desc': '!thunder: Changes the weather to thunderstorming'
-                },
-                'restart': {
-                    'func': self.restartServerCmd,
-                    'desc': '!restart: Saves and restarts the server'
-                },
-                'save': {
-                    'func': self.saveServerCmd,
-                    'desc': '!save: Saves the server'
-                },
-                'day': {
-                    'func': self.changeTimeTo,
-                    'desc': '!day: Sets the time to day time'
-                },
-                'night': {
-                    'func': self.changeTimeTo,
-                    'desc': '!night: Sets the time to night time'
-                },
-                'noon': {
-                    'func': self.changeTimeTo,
-                    'desc': '!noon: Sets the time to noon'
-                },
-                'midnight': {
-                    'func': self.changeTimeTo,
-                    'desc': '!midnight: Sets the time to midnight'
-                },
-                'help': {
-                    'func': self.sendHelp,
-                    'desc': '!help: Displays this help message'
-                },
-                'tp': {
-                    'func': self.teleportPlayer,
-                    'desc': '!tp: Teleports a player'
-                },
-                'save-spot': {
-                    'func': self.saveLocationForPlayer,
-                    'desc': '!save-spot: Saves a location for teleporting'
-                }
-        }
+
+        self.COMMANDS = {}
+        cmd_data = json.load(open(self.COMMANDS_FILE))
+        for cmd, obj in cmd_data['weather']:
+            self.COMMANDS[cmd] = obj
+            self.COMMANDS[cmd]['func'] = self.changeWeatherTo
+        for cmd, obj in cmd_data['time']:
+            self.COMMANDS[cmd] = obj
+            self.COMMANDS[cmd]['func'] = self.changeTimeTo
+        for cmd, obj in cmd_data['control']:
+            self.COMMANDS[cmd] = obj
+            self.COMMANDS[cmd]['func'] = self.serverControlCmd
+        for cmd, obj in cmd_data['player']:
+            self.COMMANDS[cmd] = obj
+            self.COMMANDS[cmd]['func'] = self.playerCmd
 
     def printFlush(self, line):
         self.printLine('>>> {}'.format(line))
@@ -79,11 +40,9 @@ class ServerHandler():
     def printLine(self, line):
         print(line)
         stdout.flush()
-        with open(self.DEBUG_LOG, 'a') as f:
-            f.write(line + '\n')
 
-    def invalidSyntax(self, player, syntax):
-        self.server.message(player, syntax)
+    def invalidSyntax(self, player, cmd):
+        self.server.message(player, self.COMMANDS[cmd]['syntax'])
 
     def changeWeatherTo(self, player, args):
         self.server.changeWeather(args[0])
@@ -91,6 +50,22 @@ class ServerHandler():
     def changeTimeTo(self, player, args):
         self.server.changeTime(args[0])
 
+    def serverControlCmd(self, player, args):
+        lowCmd = args[0].lower()
+        if lowCmd == 'restart':
+            self.restartServer()
+        elif lowCmd == 'save':
+            self.saveServer()
+        elif lowCmd == 'help':
+            self.sendHelp(player, args)
+
+    def playerCmd(self, player, args):
+        lowCmd = args[0].lower()
+        if lowCmd == 'tp':
+            self.teleportPlayer(player, args)
+        elif lowCmd == 'save-spot':
+            self.saveLocationForPlayer(player, args)
+        
     def sendHelp(self, player, args):
         if len(args) > 1:
             helpStr = ""
@@ -106,15 +81,11 @@ class ServerHandler():
 
     def restartServer(self):
         self.server.restart(self.WARNING_TIME)
-    def restartServerCmd(self, player, args):
-        self.restartServer()
 
     def saveServer(self):
         self.printFlush("Saving server...")
         self.server.save()
         self.lastSave = time()
-    def saveServerCmd(self, player, args):
-        self.saveServer()
 
     def getLocationsForPlayer(self, player):
         json_data = json.load(open(self.LOCATIONS_FILE))
@@ -122,10 +93,16 @@ class ServerHandler():
         return locations
 
     def saveLocationForPlayer(self, player, args):
-        name = args[1]
+        if len(args) != 5:
+            self.invalidSyntax(player, args[0])
+
+        name = args[1].lower()
         xyz = args[2:]
 
         json_data = json.load(open(self.LOCATIONS_FILE))
+
+        if not json_data[player]:
+            json_data[player] = {}
         json_data[player][name] = {
             'x': xyz[0],
             'y': xyz[1],
@@ -136,18 +113,25 @@ class ServerHandler():
             json.dump(json_data, json_file)
                 
     def teleportPlayer(self, player, args):
-        if len(args) < 2:
-            self.invalidSyntax(player, "Syntax: tp <them> | tp <saved-location> | tp <them> me | tp <x> <y> <z>")
+        numArgs = len(args)
+        if numArgs < 2 or numArgs > 4:
+            self.invalidSyntax(player, args[0])
             return
         
         tpString = ""
-        if len(args) == 4:
+
+        #!tp <x> <y> <z>
+        if numArgs == 4:
             tpString = "{} {} {} {}".format(player, args[1], args[2], args[3])
         
-        elif len(args) == 3 and args[2].lower() == 'me':
+        #!tp <them> me
+        elif numArgs == 3:
+            if args[2] != 'me':
+                self.invalidSyntax(player, args[0])
             if len(args[1]) < 3:
-                self.invalidSyntax(player, "Please use at least three characters in the other person's name!")
+                self.server.message(player, "Please use at least three characters in the other person's name!")
                 return
+
             players = self.server.getCurrentPlayers()
             playerToTp = ""
             for playerName in players:
@@ -155,19 +139,23 @@ class ServerHandler():
                     playerToTp = playerName
                     break
             if not playerToTp:
-                self.invalidSyntax(player, "Player '{}' not found!".format(args[1]))
+                self.server.message(player, "Player '{}' not found!".format(args[1]))
                 return
             tpString = "{} {}".format(playerToTp, player)
 
-        elif len(args) == 2:
+        #!tp <them> | <location name>
+        elif numArgs == 2:
+            #player
             playerToTp = ""
             players = self.server.getCurrentPlayers()
+            lowerSearch = args[1].lower()
             for playerName in players:
-                if args[1].lower() in playerName.lower():
+                if lowerSearch in playerName.lower():
                     playerToTp = playerName
                     break
             if playerToTp:
                 tpString = "{} {}".format(player, playerToTp)
+            #location
             else:
                 locations = self.getLocationsForPlayer(player)
                 if locations:
@@ -175,9 +163,9 @@ class ServerHandler():
                     try:
                         location = locations[args[1].lower()]
                     except KeyError:
-                        self.invalidSyntax(player, "No player or location '{}' found!".format(args[1]))
+                        self.server.message(player, "No player or location '{}' found!".format(args[1]))
                         return
-                    else:
+                    if location:
                         tpString = "{} {} {} {}".format(player, location["x"], location["y"], location["z"])
                 else:
                     self.invalidSyntax(player, "No player or location '{}' found!".format(args[1]))
@@ -196,7 +184,7 @@ class ServerHandler():
             func = self.COMMANDS[args[0]]['func']
         except KeyError:
             msg = "Function '{}' not found!".format(args[0])
-            self.invalidSyntax(player, msg)
+            self.server.message(player, msg)
             self.printFlush(msg)
         else:
             func(player, args)

@@ -1,0 +1,68 @@
+{
+    "weather": {
+        "clear": {
+            "desc": "!clear: Changes the weather to clear",
+            "syntax": "!clear",
+            "admin": true
+        },
+        "rain": {
+            "desc": "!rain: Changes the weather to raining",
+            "syntax": "!rain",
+            "admin": true
+        },
+        "thunder": {
+            "desc": "!thunder: Changes the weather to thunderstorming",
+            "syntax": "!thunder",
+            "admin": true
+        }
+    },
+    "control": {
+        "restart": {
+            "desc": "!restart: Saves and restarts the server",
+            "syntax": "!restart",
+            "admin": true
+        },
+        "save": {
+            "desc": "!save: Saves the server",
+            "syntax": "!save",
+            "admin": true
+        },
+        "help": {
+            "desc": "!help: Displays this help message",
+            "syntax": "!help (Displays all) | !help <command>",
+            "admin": true
+        }
+    },
+    "time": {
+        "day": {
+            "desc": "!day: Sets the time to day time",
+            "syntax": "!day",
+            "admin": true
+        },    
+        "night": {
+            "desc": "!night: Sets the time to night time",
+            "syntax": "!night",
+            "admin": true
+        },
+        "noon": {
+            "desc": "!noon: Sets the time to noon",
+            "syntax": "!noon",
+            "admin": true
+        },
+        "midnight": {
+            "desc": "!midnight: Sets the time to midnight",
+            "syntax": "!midnight",
+            "admin": true
+        }
+    },
+    "player": {
+        "tp": {
+            "desc": "!tp: Teleports players to other players or locations",
+            "syntax": "!tp <them> | !tp <them> <me> | !tp <saved spot> | !tp <x> <y> <z>"
+        },
+        "save-spot": {
+            "desc": "!save-spot: Saves a location for future teleportation",
+            "syntax": "!save-spot <location name> <x> <y> <z>"
+        }
+    }
+}   
