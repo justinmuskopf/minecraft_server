@@ -8,7 +8,6 @@ def main(handler):
     handler.startServer()
 
 if __name__ == "__main__":
- 
     check = Popen(['netstat', '-lnp'], stdout = PIPE, stderr = PIPE)
     out, err = check.communicate()
     if 'java' in out and '25565' in out:

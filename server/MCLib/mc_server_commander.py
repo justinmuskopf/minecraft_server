@@ -3,13 +3,18 @@ import json
 
 class ServerCommander:
     LOCATIONS_FILE = 'locations.json'
-    def __init__(server):
-        if type(server) != Server:
-            raise TypeError
+    def __init__(self, server):
         self.server = server
+        self.syntaxSet = {}
+
+    def setSyntax(self, syntax):
+        self.syntaxSet = syntax
 
     def invalidSyntax(self, player, cmd):
-        self.server.message(player, self.COMMANDS[cmd]['syntax'])
+        try:
+            self.server.message(player, self.syntaxSet[cmd])
+        except KeyError:
+            self.server.message(player, "Syntax for '{}' not found!".format(cmd))
 
     def changeWeatherTo(self, player, args):
         self.server.changeWeather(args[0])
@@ -30,14 +35,14 @@ class ServerCommander:
         if len(args) > 1:
             helpStr = ""
             try:
-                helpStr = self.COMMANDS[args[1]]['desc']
+                helpStr = self.syntaxSet[args[1].lower()]
             except KeyError:
                 self.server.say("help: No such function '{}' found".format(args[1]))
             else:
                 self.server.say(helpStr)
         else:
-            for k, cmd in self.COMMANDS.iteritems():
-                self.server.say(cmd['desc'])
+            for cmd, syntax in self.syntaxSet.iteritems():
+                self.server.say(syntax)
 
     def getLocationsForPlayer(self, player):
         json_data = json.load(open(self.LOCATIONS_FILE))
@@ -54,7 +59,7 @@ class ServerCommander:
 
         json_data = json.load(open(self.LOCATIONS_FILE))
 
-        if not json_data[player]:
+        if not player in json_data:
             json_data[player] = {}
         json_data[player][name] = {
             'x': xyz[0],

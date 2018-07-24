@@ -1,3 +1,6 @@
 *.pyc
 *.json
 *.jar
+*.txt
+**/world
+**/logs

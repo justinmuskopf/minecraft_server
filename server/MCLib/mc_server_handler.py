@@ -12,29 +12,36 @@ class ServerHandler():
     COMMANDS_FILE = 'commands.json'
     def __init__(self, server = None):
         if server:
-            if type(server) != Server:
-                raise TypeError
             self.server = server
         else:
             self.server = Server()
         self.lastSave = 0
 
-        self.commander = ServerCommander(self.server)
+        print(type(self.server))
 
+        self.commander = ServerCommander(self.server)
         self.COMMANDS = {}
+        syntaxSet = {}
+        
         cmd_data = json.load(open(self.COMMANDS_FILE))
-        for cmd, obj in cmd_data['weather']:
+        for cmd, obj in cmd_data['weather'].iteritems():
             self.COMMANDS[cmd] = obj
             self.COMMANDS[cmd]['func'] = self.commander.changeWeatherTo
-        for cmd, obj in cmd_data['time']:
+            syntaxSet[cmd] = obj['syntax']
+        for cmd, obj in cmd_data['time'].iteritems():
             self.COMMANDS[cmd] = obj
             self.COMMANDS[cmd]['func'] = self.commander.changeTimeTo
-        for cmd, obj in cmd_data['control']:
+            syntaxSet[cmd] = obj['syntax']
+        for cmd, obj in cmd_data['control'].iteritems():
             self.COMMANDS[cmd] = obj
             self.COMMANDS[cmd]['func'] = self.serverControlCmd
-        for cmd, obj in cmd_data['player']:
+            syntaxSet[cmd] = obj['syntax']
+        for cmd, obj in cmd_data['player'].iteritems():
             self.COMMANDS[cmd] = obj
-            self.COMMANDS[cmd]['func'] = self.commander.playerCmd
+            self.COMMANDS[cmd]['func'] = self.commander.playerCmd    
+            syntaxSet[cmd] = obj['syntax']
+
+        self.commander.setSyntax(syntaxSet)
 
     def printFlush(self, line):
         self.printLine('>>> {}'.format(line))
