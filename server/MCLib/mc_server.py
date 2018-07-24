@@ -12,7 +12,7 @@ class Server:
         'iLikeYoBraids'
     ]
     WAIT_FOR_STARTED = 5
-    CMD = ['java', '-Xmx2048m', '-Xms1024m', '-jar', 'server.jar'.format(path[0]), 'nogui']
+    CMD = ['java', '-Xmx4096m', '-Xms2048m', '-jar', 'server.jar'.format(path[0]), 'nogui']
     CMD_WAIT = 3
     TIMEOUT = 5
     
