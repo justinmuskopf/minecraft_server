@@ -17,8 +17,6 @@ class ServerHandler():
             self.server = Server()
         self.lastSave = 0
 
-        print(type(self.server))
-
         self.commander = ServerCommander(self.server)
         self.COMMANDS = {}
         syntaxSet = {}
