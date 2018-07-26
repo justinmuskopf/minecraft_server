@@ -9,13 +9,15 @@ class Server:
 
     ADMINS = [
         'KILA_GODZ',
-        'iLikeYoBraids'
+        'iLikeYoBraids',
+        'Hexwolf'
     ]
     WAIT_FOR_STARTED = 5
     CMD = ['java', '-Xmx4096m', '-Xms2048m', '-jar', '{}/server.jar'.format(path[0]), 'nogui']
     CMD_WAIT = 3
     TIMEOUT = 5
     
+    ADMINS_FILE = 'ops.json'
     CONNECT_PATTERN = r'^\[(?:\d{2}:){2}\d{2}\] \[.*\]: (.*) joined the game$'
     DISCONN_PATTERN = r'^\[(?:\d{2}:){2}\d{2}\] \[.*\]: (.*) lost connection: .*'
     COORDS_PATTERN  = r'^.* \[Server thread\/INFO\]: Teleported .* to (.*)$'
@@ -117,4 +119,8 @@ class Server:
     def isAdmin(self, player):
         if player in self.ADMINS:
             return True
+        json_data = json.load(open(self.ADMINS_FILE))
+        for obj in json_data:
+            if player == obj["name"]:
+                return True
         return False
