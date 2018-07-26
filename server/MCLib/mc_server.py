@@ -73,7 +73,7 @@ class Server:
     def restart(self, warnTime = 0):
         if warnTime > 0:
             self.say("Restarting Server in {} seconds!".format(self.WARNING_TIME))
-            sleep(self.WARNING_TIME)
+            sleep(warnTime)
         self.stop()
         self.start()
 
