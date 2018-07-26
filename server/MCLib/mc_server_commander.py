@@ -1,8 +1,10 @@
 from mc_server import Server
+from sys import path
 import json
+import re
 
 class ServerCommander:
-    LOCATIONS_FILE = 'locations.json'
+    LOCATIONS_FILE = '{}/locations.json'.format(path[0])
     def __init__(self, server):
         self.server = server
         self.syntaxSet = {}
@@ -50,12 +52,20 @@ class ServerCommander:
         return locations or None
 
     def saveLocationForPlayer(self, player, args):
-        if len(args) != 5:
+        argsLen = len(args)
+        if argsLen != 5 and argsLen != 2:
             self.invalidSyntax(player, args[0])
             return
-
+    
         name = args[1].lower()
-        xyz = args[2:]
+        xyz = []
+        if argsLen == 2:
+            xyz = self.server.getPlayerCoords(player)
+            if not xyz:
+                self.server.message(player, "ERROR: No coordinates received!")
+                return
+        else:
+            xyz = args[2:]
 
         json_data = json.load(open(self.LOCATIONS_FILE))
 

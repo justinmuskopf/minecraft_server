@@ -12,12 +12,13 @@ class Server:
         'iLikeYoBraids'
     ]
     WAIT_FOR_STARTED = 5
-    CMD = ['java', '-Xmx4096m', '-Xms2048m', '-jar', 'server.jar'.format(path[0]), 'nogui']
+    CMD = ['java', '-Xmx4096m', '-Xms2048m', '-jar', '{}/server.jar'.format(path[0]), 'nogui']
     CMD_WAIT = 3
     TIMEOUT = 5
     
     CONNECT_PATTERN = r'^\[(?:\d{2}:){2}\d{2}\] \[.*\]: (.*) joined the game$'
     DISCONN_PATTERN = r'^\[(?:\d{2}:){2}\d{2}\] \[.*\]: (.*) lost connection: .*'
+    COORDS_PATTERN  = r'^.* \[Server thread\/INFO\]: Teleported .* to (.*)$'
 
     def __init__(self):
         self.today = date.today()
@@ -98,6 +99,17 @@ class Server:
 
     def getCurrentPlayers(self):
         return list(self.players)
+
+    def getPlayerCoords(self, player):
+        self.writeToProcess('tp {} ~ ~ ~'.format(player))
+        coords = self.readLine()
+        print("received {}".format(coords))
+        coordsArr = []
+        if coords:
+            match = re.match(self.COORDS_PATTERN, coords)
+            if match:
+                coordsArr = [x.strip() for x in match.group(1).split(",")]
+        return coordsArr
 
     def printPlayers(self):
         print('Current Players: {}'.format(self.players))

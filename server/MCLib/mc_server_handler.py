@@ -1,5 +1,5 @@
 from time import time
-from sys import stdout
+from sys import stdout, path
 from mc_server import Server
 from mc_server_commander import ServerCommander
 import re
@@ -9,7 +9,7 @@ class ServerHandler():
     SAVE_INTERVAL = 15 * 60
     WARNING_TIME = 60
     CMD_PATTERN = r'^\[(?:\d{2}:){2}\d{2}\] \[.*\]: <(.*)> (.*)$'
-    COMMANDS_FILE = 'commands.json'
+    COMMANDS_FILE = '{}/commands.json'.format(path[0])
     def __init__(self, server = None):
         if server:
             self.server = server
