@@ -81,7 +81,7 @@ class ServerCommander:
         else:
             xyz = args[2:]
 
-        self.server.message(player, "Saving Location {} at Position {}".format(name, coords))
+        self.server.message(player, "Saving Location {} at Position {}".format(name, xyz))
         json_data = json.load(open(self.LOCATIONS_FILE))
 
         if not player in json_data:
