@@ -5,12 +5,18 @@ import re
 
 class ServerCommander:
     LOCATIONS_FILE = '{}/locations.json'.format(path[0])
+
     def __init__(self, server):
         self.server = server
         self.syntaxSet = {}
+        self.descriptions = {}
+        self.teleTable = {}
 
     def setSyntax(self, syntax):
         self.syntaxSet = syntax
+
+    def setDescriptions(self, desc):
+        self.descriptions = desc
 
     def invalidSyntax(self, player, cmd):
         try:
@@ -32,6 +38,8 @@ class ServerCommander:
             self.saveLocationForPlayer(player, args)
         elif lowCmd == 'help':
             self.sendHelp(player, args)
+        elif lowCmd == 'back':
+            self.teleportPlayerBack(player)
 
     def sendHelp(self, player, args):
         if len(args) > 1:
@@ -39,12 +47,17 @@ class ServerCommander:
             try:
                 helpStr = self.syntaxSet[args[1].lower()]
             except KeyError:
-                self.server.say("help: No such function '{}' found".format(args[1]))
+                self.server.message(player, "help: No such function '{}' found".format(args[1]), "red")
             else:
-                self.server.say(helpStr)
+                self.server.message(player, helpStr)
         else:
-            for cmd, syntax in self.syntaxSet.iteritems():
-                self.server.say(syntax)
+            helpStr = "TIP: Call '!help' on a specific function to view its syntax!\n"
+            if self.descriptions:
+                helpStr += "\n".join(self.descriptions)
+            else:
+                helpStr += "\n".join(self.syntaxSet)
+
+            self.server.message(player, helpStr)
 
     def getLocationsForPlayer(self, player):
         json_data = json.load(open(self.LOCATIONS_FILE))
@@ -56,17 +69,19 @@ class ServerCommander:
         if argsLen != 5 and argsLen != 2:
             self.invalidSyntax(player, args[0])
             return
-    
+
         name = args[1].lower()
+
         xyz = []
         if argsLen == 2:
             xyz = self.server.getPlayerCoords(player)
             if not xyz:
-                self.server.message(player, "ERROR: No coordinates received!")
+                self.server.message(player, "ERROR: No coordinates received!", "red")
                 return
         else:
             xyz = args[2:]
 
+        self.server.message(player, "Saving Location {} at Position {}".format(name, coords))
         json_data = json.load(open(self.LOCATIONS_FILE))
 
         if not player in json_data:
@@ -109,7 +124,7 @@ class ServerCommander:
                     playerToTp = playerName
                     break
             if not playerToTp:
-                self.server.message(player, "Player '{}' not found!".format(args[1]))
+                self.server.message(player, "Player '{}' not found!".format(args[1]), "red")
                 return
             tpString = "{} {}".format(playerToTp, player)
 
@@ -133,13 +148,23 @@ class ServerCommander:
                     try:
                         location = locations[args[1].lower()]
                     except KeyError:
-                        self.server.message(player, "No player or location '{}' found!".format(args[1]))
+                        self.server.message(player, "No player or location '{}' found!".format(args[1]), "red")
                         return
                     if location:
                         tpString = "{} {} {} {}".format(player, location["x"], location["y"], location["z"])
                 else:
-                    self.server.message(player, "No player or location '{}' found!".format(args[1]))
+                    self.server.message(player, "No player or location '{}' found!".format(args[1]), "red")
                     return
+
+        self.teleTable[player] = self.server.getPlayerCoords(player)
 
         self.server.teleport(tpString)
 
+    def teleportPlayerBack(self, player):
+        if player not in self.teleTable or self.teleTable[player] == None:
+            self.server.message(player, 'No previous locations to teleport you to!', 'red')
+            return
+        coords = self.teleTable[player]
+        tpString = '{} {} {} {}'.format(player, coords[0], coords[1], coords[2])
+        self.server.teleport(tpString)
+        self.teleTable[player] = None

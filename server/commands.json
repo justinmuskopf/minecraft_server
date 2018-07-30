@@ -53,7 +53,7 @@
     "player": {
         "tp": {
             "desc": "!tp: Teleports players to other players or locations",
-            "syntax": "!tp <them> | !tp <them> <me> | !tp <saved spot> | !tp <x> <y> <z>",
+            "syntax": "!tp <them> | !tp <them> me | !tp <saved spot> | !tp <x> <y> <z>",
             "admin": false
         },
         "save-spot": {
@@ -64,6 +64,11 @@
         "help": {
             "desc": "!help: Displays this help message",
             "syntax": "!help (Displays all) | !help <command>",
+            "admin": false
+        },
+        "back": {
+            "desc": "!back: Teleports a player to their position before their most recent teleport",
+            "syntax": "!back",
             "admin": false
         }
     }

@@ -20,26 +20,32 @@ class ServerHandler():
         self.commander = ServerCommander(self.server)
         self.COMMANDS = {}
         syntaxSet = {}
+        desc = []
         
         cmd_data = json.load(open(self.COMMANDS_FILE))
         for cmd, obj in cmd_data['weather'].iteritems():
             self.COMMANDS[cmd] = obj
             self.COMMANDS[cmd]['func'] = self.commander.changeWeatherTo
             syntaxSet[cmd] = obj['syntax']
+            desc.append(obj['desc'])
         for cmd, obj in cmd_data['time'].iteritems():
             self.COMMANDS[cmd] = obj
             self.COMMANDS[cmd]['func'] = self.commander.changeTimeTo
             syntaxSet[cmd] = obj['syntax']
+            desc.append(obj['desc'])
         for cmd, obj in cmd_data['control'].iteritems():
             self.COMMANDS[cmd] = obj
             self.COMMANDS[cmd]['func'] = self.serverControlCmd
             syntaxSet[cmd] = obj['syntax']
+            desc.append(obj['desc'])
         for cmd, obj in cmd_data['player'].iteritems():
             self.COMMANDS[cmd] = obj
             self.COMMANDS[cmd]['func'] = self.commander.playerCmd    
             syntaxSet[cmd] = obj['syntax']
+            desc.append(obj['desc'])
 
         self.commander.setSyntax(syntaxSet)
+        self.commander.setDescriptions(desc)
 
     def printFlush(self, line):
         self.printLine('>>> {}'.format(line))

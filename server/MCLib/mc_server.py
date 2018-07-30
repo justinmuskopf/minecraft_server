@@ -3,6 +3,7 @@ from time import sleep
 from datetime import date
 from sys import stdout, exit, path
 from mc_timeout import TimeoutSignal
+import json
 import re
 
 class Server:
@@ -20,7 +21,10 @@ class Server:
     ADMINS_FILE = 'ops.json'
     CONNECT_PATTERN = r'^\[(?:\d{2}:){2}\d{2}\] \[.*\]: (.*) joined the game$'
     DISCONN_PATTERN = r'^\[(?:\d{2}:){2}\d{2}\] \[.*\]: (.*) lost connection: .*'
-    COORDS_PATTERN  = r'^.* \[Server thread\/INFO\]: Teleported .* to (.*)$'
+    COORDS_PATTERN  = r'^\[(?:\d{2}:){2}\d{2}\] \[.*\]: .* has the following entity data: \[([-]?\d+\.\d+)d, ([-]?\d+\.\d+)d, ([-]?\d+\.\d+)d\]$'
+    COORDS_CMD      = 'execute run data get entity {} Pos'
+    #[04:25:46] [Server thread/INFO]: iLikeYoBraids has the following entity data: [-239.55627693302685d, 71.0d, 193.8483287965426d]
+
 
     def __init__(self):
         self.today = date.today()
@@ -62,8 +66,13 @@ class Server:
     def teleport(self, tpFmt):
         self.writeToProcess("tp {}".format(tpFmt))
     
-    def message(self, player, msg):
-        self.writeToProcess("tell {} {}".format(player, msg))
+    def message(self, player, msg, color = None):
+        message = {}
+        message['text'] = msg
+        if color:
+            message['color'] = color
+        
+        self.writeToProcess("tellraw {} {}".format(player, json.dumps(message)))
 
     def start(self):
         self.today = date.today()
@@ -103,14 +112,14 @@ class Server:
         return list(self.players)
 
     def getPlayerCoords(self, player):
-        self.writeToProcess('tp {} ~ ~ ~'.format(player))
+        self.writeToProcess(self.COORDS_CMD.format(player))
         coords = self.readLine()
         print("received {}".format(coords))
         coordsArr = []
         if coords:
             match = re.match(self.COORDS_PATTERN, coords)
             if match:
-                coordsArr = [x.strip() for x in match.group(1).split(",")]
+                coordsArr = [int(float(match.group(1))), int(float(match.group(2))), int(float(match.group(3)))]
         return coordsArr
 
     def printPlayers(self):
