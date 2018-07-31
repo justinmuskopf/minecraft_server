@@ -70,6 +70,11 @@
             "desc": "!back: Teleports a player to their position before their most recent teleport",
             "syntax": "!back",
             "admin": false
+        },
+        "locations": {
+            "desc": "!locations: Prints all of your saved locations to chat",
+            "syntax": "locations!",
+            "admin": false
         }
     }
 }   

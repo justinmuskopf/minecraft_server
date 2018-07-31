@@ -40,6 +40,8 @@ class ServerCommander:
             self.sendHelp(player, args)
         elif lowCmd == 'back':
             self.teleportPlayerBack(player)
+        elif lowCmd == 'locations':
+            self.sendPlayerLocations(player)
 
     def sendHelp(self, player, args):
         if len(args) > 1:
@@ -63,6 +65,11 @@ class ServerCommander:
         json_data = json.load(open(self.LOCATIONS_FILE))
         locations = json_data[player]
         return locations or None
+
+    def sendPlayerLocations(self, player):
+        locations = self.getLocationsForPlayer(player)
+        locationsStr = "\n".join([key for key in locations])
+        self.server.message(player, locationsStr)
 
     def saveLocationForPlayer(self, player, args):
         argsLen = len(args)
@@ -93,7 +100,7 @@ class ServerCommander:
         }
 
         with open(self.LOCATIONS_FILE, 'w') as json_file:
-            json.dump(json_data, json_file)
+            json.dump(json_data, json_file, indent = 4, sort_keys = True)
                 
     def teleportPlayer(self, player, args):
         numArgs = len(args)
