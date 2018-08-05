@@ -2,7 +2,7 @@ from time import time
 from sys import stdout, path
 from mc_server import Server
 from mc_server_commander import ServerCommander
-from os import environ
+from os import getenv
 import re
 import json
 
@@ -63,10 +63,10 @@ class ServerHandler():
         elif lowCmd == 'save':
             self.saveServer()
 
-    def serverShouldRun():
-        if environ.getenv(self.SHOULD_RUN_VAR, False):
-            return True
-        return False
+    def serverShouldRun(self):
+        #if int(getenv(self.SHOULD_RUN_VAR, 0)):
+        return True
+        #return False
 
     def restartServer(self):
         self.server.restart(self.WARNING_TIME)
@@ -115,6 +115,7 @@ class ServerHandler():
                 if cmd and cmd[0] == '!':
                     self.handleCommand(player, cmd[1:].lower())
 
+        self.printFlush('Stopping server due to env var...')
         self.stopServer()
 
     def startServer(self):

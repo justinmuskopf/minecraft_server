@@ -32,7 +32,7 @@ class ServerCommander:
 
     def playerCmd(self, player, args):
         lowCmd = args[0].lower()
-        if lowCmd == 'tp':
+        if lowCmd == 'tp' or lowCmd == 'bring':
             self.teleportPlayer(player, args)
         elif lowCmd == 'save-spot':
             self.saveLocationForPlayer(player, args)
@@ -104,7 +104,7 @@ class ServerCommander:
                 
     def teleportPlayer(self, player, args):
         numArgs = len(args)
-        if numArgs < 2 or numArgs > 4:
+        if numArgs != 2 and numArgs != 4:
             self.invalidSyntax(player, args[0])
             return
         
@@ -114,51 +114,32 @@ class ServerCommander:
         if numArgs == 4:
             tpString = "{} {} {} {}".format(player, args[1], args[2], args[3])
         
-        #!tp <them> me
-        elif numArgs == 3:
-            if args[2] != 'me':
-                self.invalidSyntax(player, args[0])
-                return
-            if len(args[1]) < 3:
-                self.server.message(player, "Please use at least three characters in the other person's name!")
-                return
-
-            players = self.server.getCurrentPlayers()
-            playerToTp = ""
-            lowerSearch = args[1].lower()
-            for playerName in players:
-                if lowerSearch in playerName.lower():
-                    playerToTp = playerName
-                    break
-            if not playerToTp:
-                self.server.message(player, "Player '{}' not found!".format(args[1]), "red")
-                return
-            tpString = "{} {}".format(playerToTp, player)
-
-        #!tp <them> | <location name>
+        #!tp (<them> | <location name>) | !bring <them>
         elif numArgs == 2:
-            #player
-            playerToTp = ""
-            players = self.server.getCurrentPlayers()
-            lowerSearch = args[1].lower()
-            for playerName in players:
-                if lowerSearch in playerName.lower():
-                    playerToTp = playerName
-                    break
-            if playerToTp:
-                tpString = "{} {}".format(player, playerToTp)
             #location
-            else:
-                locations = self.getLocationsForPlayer(player)
-                if locations:
-                    location = None
-                    try:
-                        location = locations[args[1].lower()]
-                    except KeyError:
-                        self.server.message(player, "No player or location '{}' found!".format(args[1]), "red")
-                        return
-                    if location:
-                        tpString = "{} {} {} {}".format(player, location["x"], location["y"], location["z"])
+            locations = self.getLocationsForPlayer(player)
+            if locations:
+                location = None
+                try:
+                    location = locations[args[1].lower()]
+                except KeyError:
+                    pass
+                if location:
+                    tpString = "{} {} {} {}".format(player, location["x"], location["y"], location["z"])
+            #player/bring
+            if not tpString:
+                playerToTp = ""
+                players = self.server.getCurrentPlayers()
+                lowerSearch = args[1].lower()
+                for playerName in players:
+                    if lowerSearch in playerName.lower():
+                        playerToTp = playerName
+                        break
+                if playerToTp:
+                    if args[0] == 'tp':
+                        tpString = "{} {}".format(player, playerToTp)
+                    elif args[0] == 'bring':
+                        tpString = "{} {}".format(playerToTp, player)
                 else:
                     self.server.message(player, "No player or location '{}' found!".format(args[1]), "red")
                     return
