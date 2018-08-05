@@ -23,8 +23,8 @@ class Server:
     DISCONN_PATTERN = r'^\[(?:\d{2}:){2}\d{2}\] \[.*\]: (.*) lost connection: .*'
     COORDS_PATTERN  = r'^\[(?:\d{2}:){2}\d{2}\] \[.*\]: .* has the following entity data: \[([-]?\d+\.\d+)d, ([-]?\d+\.\d+)d, ([-]?\d+\.\d+)d\]$'
     COORDS_CMD      = 'execute run data get entity {} Pos'
-    #[04:25:46] [Server thread/INFO]: iLikeYoBraids has the following entity data: [-239.55627693302685d, 71.0d, 193.8483287965426d]
 
+    PLAYER_GAMEMODE_CMD = 'execute as {} run gamemode {}'
 
     def __init__(self):
         self.today = date.today()
@@ -108,6 +108,9 @@ class Server:
 
         return line
 
+    def changePlayerGameMode(self, player, gamemode):
+        self.writeToProcess(self.PLAYER_GAMEMODE_CMD.format(player, gamemode))
+
     def getCurrentPlayers(self):
         return list(self.players)
 
@@ -119,7 +122,7 @@ class Server:
         if coords:
             match = re.match(self.COORDS_PATTERN, coords)
             if match:
-                coordsArr = [int(float(match.group(1))), int(float(match.group(2))), int(float(match.group(3)))]
+                coordsArr = [round(float(match.group(1)), 2), round(float(match.group(2)), 2), round(float(match.group(3)), 2)]
         return coordsArr
 
     def printPlayers(self):

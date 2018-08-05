@@ -22,7 +22,7 @@ class ServerCommander:
         try:
             self.server.message(player, self.syntaxSet[cmd])
         except KeyError:
-            self.server.message(player, "Syntax for '{}' not found!".format(cmd))
+            self.server.message(player, "Syntax for '{}' not found!".format(cmd), "red")
 
     def changeWeatherTo(self, player, args):
         self.server.changeWeather(args[0])
@@ -42,6 +42,8 @@ class ServerCommander:
             self.teleportPlayerBack(player)
         elif lowCmd == 'locations':
             self.sendPlayerLocations(player)
+        elif lowCmd == 'creative' or lowCmd == 'survival':
+            self.server.changePlayerGameMode(player, lowCmd)
 
     def sendHelp(self, player, args):
         if len(args) > 1:

@@ -80,6 +80,16 @@
             "desc": "!locations: Prints all of your saved locations to chat",
             "syntax": "locations!",
             "admin": false
+        },
+        "creative": {
+            "desc": "!creative: Sets your gamemode to creative",
+            "syntax": "!creative",
+            "admin": false
+        },
+        "survival": {
+            "desc": "!survival: Sets your gamemode to survival",
+            "syntax": "!survival",
+            "admin": false
         }
     }
 }   

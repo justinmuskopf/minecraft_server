@@ -84,11 +84,11 @@ class ServerHandler():
             func = self.COMMANDS[args[0]]['func']
         except KeyError:
             msg = "Function '{}' not found!".format(args[0])
-            self.server.message(player, msg)
+            self.server.message(player, msg, "red")
             self.printFlush(msg)
             return
         if self.COMMANDS[args[0]]['admin'] and not self.server.isAdmin(player):
-            self.server.message(player, "You don't have access to that command!")
+            self.server.message(player, "You don't have access to that command!", "red")
             return
         func(player, args)
 
