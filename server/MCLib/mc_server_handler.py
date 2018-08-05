@@ -2,6 +2,7 @@ from time import time
 from sys import stdout, path
 from mc_server import Server
 from mc_server_commander import ServerCommander
+from os import environ
 import re
 import json
 
@@ -10,6 +11,7 @@ class ServerHandler():
     WARNING_TIME = 60
     CMD_PATTERN = r'^\[(?:\d{2}:){2}\d{2}\] \[.*\]: <(.*)> (.*)$'
     COMMANDS_FILE = '{}/commands.json'.format(path[0])
+    SHOULD_RUN_VAR = "MC_SVR_SHOULD_RUN"
     def __init__(self, server = None):
         if server:
             self.server = server
@@ -61,6 +63,11 @@ class ServerHandler():
         elif lowCmd == 'save':
             self.saveServer()
 
+    def serverShouldRun():
+        if environ.getenv(self.SHOULD_RUN_VAR, False):
+            return True
+        return False
+
     def restartServer(self):
         self.server.restart(self.WARNING_TIME)
 
@@ -91,7 +98,7 @@ class ServerHandler():
         return False
 
     def routine(self):
-        while True:
+        while self.serverShouldRun():
             if self.server.restartNeeded():
                 self.restartServer()
             if self.saveNeeded():
@@ -107,6 +114,8 @@ class ServerHandler():
                 player, cmd = match.group(1, 2)
                 if cmd and cmd[0] == '!':
                     self.handleCommand(player, cmd[1:].lower())
+
+        self.stopServer()
 
     def startServer(self):
         self.printFlush("Starting server...")
